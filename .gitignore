@@ -1,0 +1,80 @@
+*~
+*.o
+*.a
+*.lo
+*.loT
+*.la
+*.so
+*.lai
+*.sig
+*.orig
+*.rej
+.libs
+.depends
+*.log
+*.substvars
+*-stamp
+*.swp
+*.swo
+*.cache
+*.dist
+*.dylib
+*.rej
+*.orig
+*.dSYM
+*.patch
+*.sock
+.pc
+
+# Editor projects
+*.kdev4
+*.cproject
+*.project
+*.bbprojectd
+
+# Exuberant ctags
+tags
+
+# Local icon files
+icon.png
+
+# OS specific cruft
+.DS_Store
+
+# Archives
+freeradius-server-*tar*
+
+# Autoconf and libtool output
+build/*
+
+config.status
+*confdefs.h
+*conftest*
+*confcache
+Make.inc
+libtool
+autom4te.cache
+config.guess
+config.sub
+config.h
+src/bin/unit_test_attribute
+src/modules/lib/
+warnings.txt
+
+# Redis setup script output
+nodes*.conf
+dump*.rdb
+appendonly*.aof
+
+# Analyzer output
+*.plist
+
+# Local scripts
+run.sh
+
+# rpm packages
+rpmbuild/
+/install
+
+# fuzzer output files
+crash-*
