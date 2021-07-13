@@ -20,9 +20,13 @@ all:
 	@echo "help            - print this"
 	@echo "docker.deps     - Build the 'deps' container image"
 	@echo "docker.radius   - Build the 'radius' container image"
+	@echo "docker.powerdns - Build the 'dns' container image"
 
 docker.deps:
 	$(Q)docker build . -f docker/deps/Dockerfile -t $(DOCKER_IMAGE_DEPS):ubuntu20-deps
 
 docker.radius: docker.deps
 	$(Q)docker build . -f docker/server/radius/Dockerfile -t $(DOCKER_IMAGE_DEPS):service-radius
+
+docker.powerdns: docker.deps
+	$(Q)docker build . -f docker/server/powerdns/Dockerfile -t $(DOCKER_IMAGE_DEPS):service-dns
