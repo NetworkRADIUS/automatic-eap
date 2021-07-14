@@ -92,6 +92,20 @@ docker.www.run: docker.www
 		-p 80:80/tcp freeradius/automatic-eap:service-www
 
 #
+#  Client WPA
+#
+docker.client.wpa:
+	$(Q)docker build . -f docker/client/wpa/Dockerfile -t $(DOCKER_IMAGE_DEPS):client-wpa
+
+docker.client.run: docker.client.wpa
+	$(Q)docker run -it --rm --name client-wpa \
+		-e DNS_ZONE="$(DNS_ZONE)" \
+		-e DNS_RECORDS="$(DNS_RECORDS)" \
+		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
+		-e DNS_CERT_SERVER_PATH="$(DNS_CERT_SERVER_PATH)" \
+		freeradius/automatic-eap:client-wpa
+
+#
 #  Clean
 #
 docker.clean: build.certs.clean docker.radius.clean docker.dns.clean docker.www.clean
@@ -105,6 +119,4 @@ docker.dns.clean:
 docker.www.clean:
 	$(Q)docker rm -f service-www
 
-docker.run: docker.clean docker.radius.run docker.dns.run docker.www.run
-
-
+docker.server.run: docker.clean docker.radius.run docker.dns.run docker.www.run
