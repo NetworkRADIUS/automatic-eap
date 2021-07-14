@@ -28,6 +28,8 @@ RUN make -C certs DH_KEY_SIZE=$dh_key_size
 #  Overwrite the /etc/freeradius using our own config files.
 #
 ADD docker/server/radius/config/etc/freeradius/ /etc/freeradius/
+RUN chmod 644 /etc/freeradius/certs/*.pem
+
 ADD docker/server/radius/start.sh /usr/local/bin/start.sh
 RUN chmod a+x /usr/local/bin/*.sh
 
