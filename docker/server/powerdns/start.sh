@@ -16,21 +16,19 @@ if [ -z "${DNS_ZONE}" ]; then
   exit 1
 fi
 pdnsutil create-zone "${DNS_ZONE}"
-#pdnsutil add-record ${DNS_ZONE} A ${IPADDR}
+pdnsutil add-record "${DNS_ZONE}" . A ${IPADDR}
 
 if [ -z "${DNS_RECORDS}" ]; then
   echo "ERROR: We can't continue without DNS_RECORDS=\"entry1 entryN ...\" env"
   exit 1
 fi
-for _record in ${DNS_RECORDS}; do
+for _record in ${DNS_RECORDS[*]}; do
   _entry="$(echo ${_record} | cut -f1 -d '|')"
   _ipaddr="$(echo ${_record} | cut -f2 -d '|')"
 
   [ -z "${_ipaddr}" ] && _ipaddr="${IPADDR}"
 
-  echo "## Creating ${_record} -> ${_ipaddr} @ ${DNS_ZONE}"
-
-  pdnsutil add-record ${DNS_ZONE} ${_record} A ${_ipaddr}
+  pdnsutil add-record ${DNS_ZONE} ${_entry} A ${_ipaddr}
 done
 
 #
@@ -48,6 +46,9 @@ if [ -z "${DNS_CERT_SERVER_PATH}" ]; then
 fi
 pdnsutil add-record ${DNS_ZONE} _server._cert. CERT "6 0 0 $(echo ${DNS_CERT_SERVER_PATH} | base64)"
 
+echo "-----------------------------------------------------"
+pdnsutil list-zone ${DNS_ZONE}
+echo "-----------------------------------------------------"
 #
 # Start PowerDNS
 # same as /etc/init.d/pdns monitor
