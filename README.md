@@ -50,7 +50,24 @@ $ make docker.server.run
 
 ## Tests
 
+Check DNS entries
+
 ```
-$ curl -H "Host: certs.example.com" http://localhost/.well-known/est/cacerts
-$ curl -H "Host: certs.example.com" http://localhost/.well-known/eap/server
+$ dig @127.0.0.1 _ca._cert._eap.example.com CERT +short
+IPGP 0 0 aHR0cDovL2NlcnRzLmV4YW1wbGUuY29tLy53ZWxsLWtub3duL2VzdC9j YWNlcnRz
+$ dig @127.0.0.1 _ca._cert._eap.example.com CERT +short | sed 's/IPGP 0 0 //g' | base64 -d
+http://certs.example.com/.well-known/est/cacerts
+$
+$ dig @127.0.0.1 _server._cert._eap.example.com CERT +short
+IPGP 0 0 aHR0cDovL2NlcnRzLmV4YW1wbGUuY29tLy53ZWxsLWtub3duL2VhcC9z ZXJ2ZXI=
+$ dig @127.0.0.1 _server._cert._eap.example.com CERT +short | sed 's/IPGP 0 0 //g' | base64 -d
+http://certs.example.com/.well-known/eap/server
+$
+```
+
+Validate web server
+
+```
+$ curl http://example.com/.well-known/est/cacerts
+$ curl http://example.com/.well-known/eap/server
 ```
