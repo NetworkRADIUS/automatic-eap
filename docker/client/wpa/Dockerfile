@@ -18,7 +18,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # install freeradius package
 #
 RUN apt-get -y update && \
-	apt-get -y install wpasupplicant libssl-dev
+	apt-get -y install wpasupplicant libssl-dev python3-pip
 
 #
 #  install eapol_test
@@ -31,9 +31,15 @@ RUN	make -j4 eapol_test && cp eapol_test /usr/local/bin/eapol_test && rm -rf /tm
 RUN rm -rf /tmp/wpa_supplicant-2.9/wpa_supplicant
 
 #
+# Automatic-EAP Script dependencies
+#
+ADD docker/client/automatic-eap/requirements.txt /tmp
+RUN pip3 install -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
+
+#
 # Automatic-EAP Script
 #
-ADD docker/client/automatic-eap.py /usr/local/bin/
+ADD docker/client/automatic-eap/automatic-eap.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/automatic-eap.py
 
 #
