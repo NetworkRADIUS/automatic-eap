@@ -25,6 +25,7 @@ import argparse
 import base64
 import dns.resolver # pip3 install dnspython
 import os, errno
+import OpenSSL.crypto
 import re
 import sys
 import shutil
@@ -37,6 +38,11 @@ RADIUS_USER = "bob"
 RADIUS_PASS = "hello"
 
 default_cert_dest = "/etc/certs"
+
+def show_cert(_cert_file):
+	cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, open(_cert_file).read())
+	print("    > Issued to = \"{0}\"".format(cert.get_subject().CN))
+	print("    > Issued By = \"{0}\"".format(cert.get_issuer().CN))
 
 def overwrite_url(_url, _host):
 	parsed = urlparse(_url)
@@ -113,6 +119,7 @@ def _main():
 		if args.url_host:
 			ca_cert_url = overwrite_url(ca_cert_url, args.url_host)
 		ca_cert_file = downlod_file(ca_cert_url, args.cert_dest)
+		show_cert(ca_cert_file)
 
 		# Lookup the _server._cert ...
 		server_ca_url = dns_get_cert_url("_server._cert._eap", args.domain, args.dns_server)
@@ -120,6 +127,7 @@ def _main():
 		if args.url_host:
 			server_ca_url = overwrite_url(server_ca_url, args.url_host)
 		server_ca_file = downlod_file(server_ca_url, args.cert_dest)
+		show_cert(server_ca_file)
 
 		# Generate wpa_supplicant.conf
 		print("    [*] Generate the '{0}'".format(args.wpa_conf))
