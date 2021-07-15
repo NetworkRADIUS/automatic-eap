@@ -18,7 +18,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # install freeradius package
 #
 RUN apt-get -y update && \
-	apt-get -y install wpasupplicant libssl-dev python3-pip
+	apt-get -y install wpasupplicant hostapd libssl-dev python3-pip
 
 #
 #  install eapol_test
@@ -42,8 +42,6 @@ RUN pip3 install -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
 ADD docker/client/automatic-eap/automatic-eap.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/automatic-eap.py
 
-#
-#  Client
-#
+WORKDIR /root
 
 CMD ["/bin/bash"]
