@@ -5,8 +5,8 @@
 Edit the `CA` files.
 
 ```
-$ vi docker/server/radius/config/etc/freeradius/certs/ca.cnf
-$ vi docker/server/radius/config/etc/freeradius/certs/server.cnf
+$ vi certs/ca.cnf
+$ vi certs/server.cnf
 ```
 
 ## RADIUS

@@ -25,11 +25,11 @@ WORKDIR /etc/nginx
 
 # Certificates
 RUN mkdir -p /var/www/html/.well-known/est/
-ADD docker/server/radius/config/etc/freeradius/certs/ca.pem \
+ADD certs/ca.pem \
 	/var/www/html/.well-known/est/cacerts
 
 RUN mkdir -p /var/www/html/.well-known/eap/
-ADD docker/server/radius/config/etc/freeradius/certs/server.pem \
+ADD certs/server.pem \
 	/var/www/html/.well-known/eap/server
 
 RUN chmod 0644 /var/www/html/.well-known/eap/server \

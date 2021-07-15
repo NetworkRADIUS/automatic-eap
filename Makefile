@@ -45,10 +45,10 @@ docker.deps: build.certs
 #  Certificates
 #
 build.certs:
-	$(Q)make -C docker/server/radius/config/etc/freeradius/certs/ DH_KEY_SIZE=2048 all
+	$(Q)make -C certs/ DH_KEY_SIZE=2048 all
 
 build.certs.clean:
-	$(Q)make -C docker/server/radius/config/etc/freeradius/certs/ destroycerts
+	$(Q)make -C certs/ destroycerts
 
 #
 #  Radius

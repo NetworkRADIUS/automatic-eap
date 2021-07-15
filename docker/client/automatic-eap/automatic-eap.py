@@ -100,7 +100,7 @@ def _main():
 	parser.add_argument("-c", "--cert-dest", dest = "cert_dest", help = "Certificate destination directory.", required = False, default = DEFAULT_CERT_DEST)
 	parser.add_argument("-H", "--overwrite-dns-cert-host", dest = "url_host", help = "Overwrite the HOST from DNS/CERT reply.", required = False)
 	parser.add_argument("-w", "--eapol-test-conf", dest = "eapol_conf", help = "Destination of generated eapol_test.conf file.", default = "/tmp/eapol_test.conf", required = False)
-	parser.add_argument("-S", "--radius-server", dest = "radius_server", help = "RADIUS Server", required = True)
+	parser.add_argument("-S", "--radius-server", dest = "radius_server", help = "RADIUS Server", default = "localhost", required = True)
 	parser.add_argument("-e", "--radius-secret", dest = "radius_secret", help = "RADIUS Secret", default = "testing123", required = False)
 	parser.add_argument("-u", "--radius-user", dest = "radius_user", help = "RADIUS User", required = True)
 	parser.add_argument("-p", "--radius-pass", dest = "radius_pass", help = "RADIUS Pass", required = True)
