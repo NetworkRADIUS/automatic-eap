@@ -14,7 +14,7 @@ $ vi docker/server/radius/config/etc/freeradius/certs/server.cnf
 ### Args
 
 ```
-RADIUS_CLIENTS="client1|ipaddr1|secret1 clientN|ipaddrN}|secretN"
+RADIUS_CLIENTS="client1|ipaddr1|secret1 clientN|ipaddrN|secretN"
 RADIUS_USERS="user1|pass1 userN|passN"
 ```
 
