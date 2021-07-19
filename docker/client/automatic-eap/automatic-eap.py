@@ -58,7 +58,7 @@ def downlod_file(_url, _dest):
 
 		return _destfile
 	except Exception as e:
-		raise ValueError("Can't download {0} in {1}, error {1}".format(_url, _dest, e))
+		raise ValueError("Can't download {0} in {1}, error {2}".format(_url, _dest, e))
 
 def dns_get_cert_url(_type, _domain):
 	cert_domain = "{0}.{1}".format(_type, _domain)
@@ -78,9 +78,10 @@ def dns_get_cert_url(_type, _domain):
 			# the type should be IPKIX (4)
 			if _type != "4":
 				raise ValueError("The CERT type should be 4 (IPKIX) instead of {0}".format(_type))
+
 			return base64.b64decode(_cert).decode('ascii')
 	except Exception as e:
-		raise ValueError("Can't resolve {0}, error {1}".format(cert_domain, e))
+		raise ValueError("Can't resolve cert {0}, error {1}".format(cert_domain, e))
 
 def create_eapol_conf(_eapol_conf, _ca_cert, _server_cert, _radius_user, _radius_pass):
 	try:
