@@ -19,9 +19,9 @@ import shutil
 import traceback
 import wget
 
-DEST_DIR = "/tmp/automatic-eap"
-
 from urllib.parse import urlparse
+
+DEST_DIR = "/tmp/automatic-eap"
 
 dns_server = None
 
