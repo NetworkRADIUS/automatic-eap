@@ -26,7 +26,7 @@ It creates the domain zone adding the subdomains `www` pointing to the container
 
 ```
 docker run -dit --name service-dns \
-		-e DNS_ZONE="example.com" \
+		-e DOMAIN="example.com" \
 		-e DNS_RECORDS="www ftp|192.168.10.55" \
 		-e DNS_CERT_CA_PATH="http://certs.example.com/.well-known/est/cacerts" \
 		-e DNS_CERT_SERVER_PATH="http://certs.example.com/.well-known/eap/server" \

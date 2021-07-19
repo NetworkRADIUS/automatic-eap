@@ -10,7 +10,7 @@ DOCKER_SUBNET := $(shell docker network inspect --format='{{range .IPAM.Config}}
 RADIUS_CLIENTS := "DockerSubnet01|$(DOCKER_SUBNET)|testing123"
 
 # DNS settings
-DNS_ZONE := example.com
+DOMAIN := example.com
 DNS_RECORDS := foo|192.168.10.55 bar|192.168.10.52
 DNS_CERT_CA_PATH := http://certs.example.com/.well-known/est/cacerts
 DNS_CERT_SERVER_PATH := http://certs.example.com/.well-known/eap/server
@@ -71,7 +71,7 @@ docker.dns.run: docker.dns docker.www.run
 	$(eval DOCKER_WWW_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' service-www))
 	$(eval DNS_RECORDS += certs|$(DOCKER_WWW_IP) www|$(DOCKER_WWW_IP))
 	$(Q)docker run -dit --name service-dns \
-		-e DNS_ZONE="$(DNS_ZONE)" \
+		-e DOMAIN="$(DOMAIN)" \
 		-e DNS_RECORDS="$(DNS_RECORDS)" \
 		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
 		-e DNS_CERT_SERVER_PATH="$(DNS_CERT_SERVER_PATH)" \
@@ -85,7 +85,7 @@ docker.www: docker.deps
 
 docker.www.run: docker.www
 	$(Q)docker run -dit --name service-www \
-		-e DNS_ZONE="$(DNS_ZONE)" \
+		-e DOMAIN="$(DOMAIN)" \
 		-e DNS_RECORDS="$(DNS_RECORDS)" \
 		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
 		-e DNS_CERT_SERVER_PATH="$(DNS_CERT_SERVER_PATH)" \
@@ -115,7 +115,7 @@ docker.client.wpa:
 
 docker.client.run: docker.client.wpa
 	$(Q)docker run -it --rm --name client-wpa \
-		-e DNS_ZONE="$(DNS_ZONE)" \
+		-e DOMAIN="$(DOMAIN)" \
 		-e DNS_RECORDS="$(DNS_RECORDS)" \
 		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
 		-e DNS_CERT_SERVER_PATH="$(DNS_CERT_SERVER_PATH)" \

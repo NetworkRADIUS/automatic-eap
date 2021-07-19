@@ -11,12 +11,12 @@ mkdir -p /etc/powerdns/pdns.d
 rm -f /etc/powerdns/powerdns.sqlite3
 sqlite3 /etc/powerdns/powerdns.sqlite3 < /usr/share/doc/pdns-backend-sqlite3/schema.sqlite3.sql
 
-if [ -z "${DNS_ZONE}" ]; then
-  echo "ERROR: We can't continue without DNS_ZONE=... env"
+if [ -z "${DOMAIN}" ]; then
+  echo "ERROR: We can't continue without DOMAIN=... env"
   exit 1
 fi
-pdnsutil create-zone "${DNS_ZONE}"
-pdnsutil add-record "${DNS_ZONE}" . A ${IPADDR}
+pdnsutil create-zone "${DOMAIN}"
+pdnsutil add-record "${DOMAIN}" . A ${IPADDR}
 
 if [ -z "${DNS_RECORDS}" ]; then
   echo "ERROR: We can't continue without DNS_RECORDS=\"entry1 entryN ...\" env"
@@ -28,7 +28,7 @@ for _record in ${DNS_RECORDS[*]}; do
 
   [ -z "${_ipaddr}" ] && _ipaddr="${IPADDR}"
 
-  pdnsutil add-record ${DNS_ZONE} ${_entry} A ${_ipaddr}
+  pdnsutil add-record ${DOMAIN} ${_entry} A ${_ipaddr}
 done
 
 #
@@ -38,16 +38,16 @@ if [ -z "${DNS_CERT_CA_PATH}" ]; then
   echo "ERROR: We can't continue without DNS_CERT_CA_PATH=\"http://host.com/path/cert\" env"
   exit 1
 fi
-pdnsutil add-record ${DNS_ZONE} _ca._cert._eap CERT "6 0 0 $(echo -n ${DNS_CERT_CA_PATH} | base64)"
+pdnsutil add-record ${DOMAIN} _ca._cert._eap CERT "6 0 0 $(echo -n ${DNS_CERT_CA_PATH} | base64)"
 
 if [ -z "${DNS_CERT_SERVER_PATH}" ]; then
   echo "ERROR: We can't continue without DNS_CERT_SERVER_PATH=\"http://host.com/path/cert\" env"
   exit 1
 fi
-pdnsutil add-record ${DNS_ZONE} _server._cert._eap CERT "6 0 0 $(echo -n ${DNS_CERT_SERVER_PATH} | base64)"
+pdnsutil add-record ${DOMAIN} _server._cert._eap CERT "6 0 0 $(echo -n ${DNS_CERT_SERVER_PATH} | base64)"
 
 echo "-----------------------------------------------------"
-pdnsutil list-zone ${DNS_ZONE}
+pdnsutil list-zone ${DOMAIN}
 echo "-----------------------------------------------------"
 #
 # Start PowerDNS
