@@ -57,9 +57,9 @@ def downlod_file(_url, _dest):
 		raise ValueError("Can't download {0} in {1}".format(_url, _dest))
 
 def dns_get_cert_url(_type, _domain):
+	cert_domain = "{0}.{1}".format(_type, _domain)
 	try:
 		res = dns.resolver.Resolver(configure=False)
-		cert_domain = "{0}.{1}".format(_type, _domain)
 
 		print("\t[-] Lookup the domain: \"{0}\"".format(cert_domain))
 
@@ -67,11 +67,16 @@ def dns_get_cert_url(_type, _domain):
 			res.nameservers = [dns_server]
 
 		for row in res.resolve(cert_domain, "CERT"):
-			# As described in https://datatracker.ietf.org/doc/html/rfc4398#section-2.2
+			# As the 'CERT' layout described in https://datatracker.ietf.org/doc/html/rfc4398#section-2.2
 			(_begin, _type, _tag, _algo, _cert, _end) = re.split(r"^(\d) (\d) (\d) (.+)$", str(row))
+
+			# As described in https://datatracker.ietf.org/doc/draft-dekok-emu-eap-usability/
+			# the type should be IPKIX (4)
+			if _type != "4":
+				raise ValueError("The CERT type should be 4 (IPKIX) instead of {0}".format(_type))
 			return base64.b64decode(_cert).decode('ascii')
 	except Exception as e:
-		raise ValueError("Can't resolve {0}".format(cert_domain))
+		raise ValueError("Can't resolve {0}, error {1}".format(cert_domain, e))
 
 def create_eapol_conf(_wpa_conf, _ca_cert, _server_cert, _radius_user, _radius_pass):
 	conf =  """

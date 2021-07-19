@@ -38,13 +38,13 @@ if [ -z "${DNS_CERT_CA_PATH}" ]; then
   echo "ERROR: We can't continue without DNS_CERT_CA_PATH=\"http://host.com/path/cert\" env"
   exit 1
 fi
-pdnsutil add-record ${DOMAIN} _ca._cert._eap CERT "6 0 0 $(echo -n ${DNS_CERT_CA_PATH} | base64)"
+pdnsutil add-record ${DOMAIN} _ca._cert._eap CERT "4 0 0 $(echo -n ${DNS_CERT_CA_PATH} | base64)"
 
 if [ -z "${DNS_CERT_SERVER_PATH}" ]; then
   echo "ERROR: We can't continue without DNS_CERT_SERVER_PATH=\"http://host.com/path/cert\" env"
   exit 1
 fi
-pdnsutil add-record ${DOMAIN} _server._cert._eap CERT "6 0 0 $(echo -n ${DNS_CERT_SERVER_PATH} | base64)"
+pdnsutil add-record ${DOMAIN} _server._cert._eap CERT "4 0 0 $(echo -n ${DNS_CERT_SERVER_PATH} | base64)"
 
 echo "-----------------------------------------------------"
 pdnsutil list-zone ${DOMAIN}
