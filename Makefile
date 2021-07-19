@@ -33,6 +33,10 @@ all:
 	@echo "docker.dns      - Build the 'dns' container image"
 	@echo "docker.www      - Build the 'www' container image"
 
+ifeq "$(DOMAIN)" ""
+	$(error We can't go without the DOMAIN=... parameter)
+endif
+
 docker: docker.radius docker.dns
 
 #
@@ -44,10 +48,19 @@ docker.deps: build.certs
 #
 #  Certificates
 #
-build.certs:
+certs/client.cnf:
+	$(Q)sed "s/@@DOMAIN@@/$(DOMAIN)/g" < certs/client.cnf.tpl > certs/client.cnf
+
+certs/server.cnf:
+	$(Q)sed "s/@@DOMAIN@@/$(DOMAIN)/g" < certs/server.cnf.tpl > certs/server.cnf
+
+build.certs: certs/client.cnf certs/server.cnf
 	$(Q)make -C certs/ DH_KEY_SIZE=2048 all
 
-build.certs.clean:
+clean.certs.cnf:
+	$(Q)rm -f certs/server.cnf certs/client.cnf
+
+clean.certs: clean.certs.cnf certs/client.cnf certs/server.cnf
 	$(Q)make -C certs/ destroycerts
 
 #
@@ -94,7 +107,7 @@ docker.www.run: docker.www
 #
 #  Clean
 #
-docker.clean: build.certs.clean docker.radius.clean docker.dns.clean docker.www.clean
+docker.clean: clean.certs docker.radius.clean docker.dns.clean docker.www.clean
 
 docker.radius.clean:
 	$(Q)docker rm -f service-radius

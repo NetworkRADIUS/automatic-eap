@@ -51,7 +51,7 @@ countryName		= FR
 stateOrProvinceName	= Radius
 localityName		= Somewhere
 organizationName	= Example Inc.
-emailAddress		= admin@example.org
+emailAddress		= admin@@@DOMAIN@@
 commonName		= "Example Automatic-EAP Server Certificate"
 
 [ v3_req ]
@@ -66,7 +66,7 @@ authorityKeyIdentifier = keyid:always,issuer:always
 #  the user machine has network access.  So the host name
 #  here doesn't really have to match anything in DNS.
 [alt_names]
-DNS.1 = radius.example.com
+DNS.1 = radius.@@DOMAIN@@
 
 # NAIRealm from RFC 7585
-otherName.0 = 1.3.6.1.5.5.7.8.8;FORMAT:UTF8,UTF8:*.example.com
+otherName.0 = 1.3.6.1.5.5.7.8.8;FORMAT:UTF8,UTF8:*.@@DOMAIN@@

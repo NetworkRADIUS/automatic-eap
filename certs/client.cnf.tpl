@@ -49,5 +49,5 @@ countryName		= FR
 stateOrProvinceName	= Radius
 localityName		= Somewhere
 organizationName	= Example Inc.
-emailAddress		= user@example.org
-commonName		= user@example.org
+emailAddress		= user@@@DOMAIN@@
+commonName		= user@@@DOMAIN@@
