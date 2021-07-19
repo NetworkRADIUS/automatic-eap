@@ -34,9 +34,13 @@ def show_cert(_cert_file):
 		raise ValueError("Can't load certificate file: {0}, error {1}".format(_cert_file, e))
 
 def overwrite_url(_url, _host):
-	parsed = urlparse(_url)
-	parsed = parsed._replace(netloc = _host).geturl()
-	return parsed
+	try:
+		parsed = urlparse(_url)
+		parsed = parsed._replace(netloc = _host).geturl()
+
+		return parsed
+	except Exception as e:
+		raise ValueError("Can't urlparse: {0}, error {1}".format(_url, e))
 
 def downlod_file(_url, _dest):
 	try:
@@ -79,11 +83,12 @@ def dns_get_cert_url(_type, _domain):
 		raise ValueError("Can't resolve {0}, error {1}".format(cert_domain, e))
 
 def create_eapol_conf(_eapol_conf, _ca_cert, _server_cert, _radius_user, _radius_pass):
-	_destdir = os.path.dirname(_eapol_conf)
-	if not os.path.isdir(_destdir):
-		os.mkdir(_destdir)
+	try:
+		_destdir = os.path.dirname(_eapol_conf)
+		if not os.path.isdir(_destdir):
+			os.mkdir(_destdir)
 
-	conf = """
+		conf = """
 #
 # Generated in {3} by Automatic-EAP
 #
@@ -97,8 +102,10 @@ network={{
 \tphase2=\"auth=PAP\"
 }}\n"""
 
-	with open(_eapol_conf, 'w') as f:
-		f.write(conf.format(_radius_user, _radius_pass, _ca_cert, _eapol_conf))
+		with open(_eapol_conf, 'w') as f:
+			f.write(conf.format(_radius_user, _radius_pass, _ca_cert, _eapol_conf))
+	except Exception as e:
+		raise ValueError("Can't create {0}, error {1}".format(_eapol_conf, e))
 
 def _main():
 	global dns_server
