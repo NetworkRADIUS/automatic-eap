@@ -2,8 +2,8 @@
 #  Copyright 2021 NetworkRADIUS SARL (legal@networkradius.com)
 #
 
-DOCKER_IMAGE := freeradius
-DOCKER_IMAGE_DEPS := $(DOCKER_IMAGE)/automatic-eap
+DOCKER_IMAGE_HUB := networkradius
+DOCKER_IMAGE_ROOT := $(DOCKER_IMAGE_HUB)/automatic-eap
 DOCKER_SUBNET := $(shell docker network inspect --format='{{range .IPAM.Config}}{{.Subnet}}{{end}}' bridge)
 
 # RADIUS Settings
@@ -43,7 +43,7 @@ docker: docker.radius docker.dns
 #  Deps
 #
 docker.deps: build.certs
-	$(Q)docker build . -f docker/deps/Dockerfile -t $(DOCKER_IMAGE_DEPS):ubuntu20-deps
+	$(Q)docker build . -f docker/deps/Dockerfile -t $(DOCKER_IMAGE_ROOT):ubuntu20-deps
 
 #
 #  Certificates
@@ -67,18 +67,18 @@ clean.certs: clean.certs.cnf certs/client.cnf certs/server.cnf
 #  Radius
 #
 docker.radius: docker.deps
-	$(Q)docker build . -f docker/server/radius/Dockerfile -t $(DOCKER_IMAGE_DEPS):service-radius
+	$(Q)docker build . -f docker/server/radius/Dockerfile -t $(DOCKER_IMAGE_ROOT):service-radius
 
 docker.radius.run: docker.radius
 	$(Q)docker run -dit --name service-radius \
 		-e RADIUS_CLIENTS=$(RADIUS_CLIENTS) \
-		-p 1812-1813:1812-1813/udp freeradius/automatic-eap:service-radius
+		-p 1812-1813:1812-1813/udp $(DOCKER_IMAGE_ROOT):service-radius
 
 #
 #  Dns
 #
 docker.dns: docker.deps
-	$(Q)docker build . -f docker/server/powerdns/Dockerfile -t $(DOCKER_IMAGE_DEPS):service-dns
+	$(Q)docker build . -f docker/server/powerdns/Dockerfile -t $(DOCKER_IMAGE_ROOT):service-dns
 
 docker.dns.run: docker.dns docker.www.run
 	$(Q)docker run -dit --name service-dns \
@@ -86,13 +86,13 @@ docker.dns.run: docker.dns docker.www.run
 		-e DNS_RECORDS="$(DNS_RECORDS)" \
 		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
 		-e DNS_CERT_SERVER_PATH="$(DNS_CERT_SERVER_PATH)" \
-		-p 53:53/udp freeradius/automatic-eap:service-dns
+		-p 53:53/udp $(DOCKER_IMAGE_ROOT):service-dns
 
 #
 #  wwww
 #
 docker.www: docker.deps
-	$(Q)docker build . -f docker/server/nginx/Dockerfile -t $(DOCKER_IMAGE_DEPS):service-www
+	$(Q)docker build . -f docker/server/nginx/Dockerfile -t $(DOCKER_IMAGE_ROOT):service-www
 
 docker.www.run: docker.www
 	$(Q)docker run -dit --name service-www \
@@ -100,7 +100,7 @@ docker.www.run: docker.www
 		-e DNS_RECORDS="$(DNS_RECORDS)" \
 		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
 		-e DNS_CERT_SERVER_PATH="$(DNS_CERT_SERVER_PATH)" \
-		-p 80:80/tcp freeradius/automatic-eap:service-www
+		-p 80:80/tcp $(DOCKER_IMAGE_ROOT):service-www
 
 #
 #  Clean
@@ -122,7 +122,7 @@ docker.server.run: clean.docker docker.radius.run docker.dns.run docker.www.run
 #  Client WPA
 #
 docker.client.wpa:
-	$(Q)docker build . -f docker/client/wpa/Dockerfile -t $(DOCKER_IMAGE_DEPS):client-wpa
+	$(Q)docker build . -f docker/client/wpa/Dockerfile -t $(DOCKER_IMAGE_ROOT):client-wpa
 
 docker.client.run: docker.client.wpa
 	$(Q)docker run -it --rm --name client-wpa \
@@ -130,4 +130,4 @@ docker.client.run: docker.client.wpa
 		-e DNS_RECORDS="$(DNS_RECORDS)" \
 		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
 		-e DNS_CERT_SERVER_PATH="$(DNS_CERT_SERVER_PATH)" \
-		freeradius/automatic-eap:client-wpa
+		$(DOCKER_IMAGE_ROOT):client-wpa
