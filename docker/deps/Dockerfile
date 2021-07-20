@@ -20,6 +20,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
 #  Development utilities
     apt-get install $APT_OPTS \
+    	apt-utils \
         devscripts \
         equivs \
         git \
