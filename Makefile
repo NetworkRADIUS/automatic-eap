@@ -11,7 +11,7 @@ RADIUS_CLIENTS := "DockerSubnet01|$(DOCKER_SUBNET)|testing123"
 
 # DNS settings
 DOMAIN := example.com
-DNS_RECORDS := foo|192.168.10.55 bar|192.168.10.52
+DNS_RECORDS := www certs foo|192.168.10.55 bar|192.168.10.52
 DNS_CERT_CA_PATH := http://certs.example.com/.well-known/est/cacerts
 DNS_CERT_SERVER_PATH := http://certs.example.com/.well-known/eap/server
 
@@ -81,8 +81,6 @@ docker.dns: docker.deps
 	$(Q)docker build . -f docker/server/powerdns/Dockerfile -t $(DOCKER_IMAGE_DEPS):service-dns
 
 docker.dns.run: docker.dns docker.www.run
-	$(eval DOCKER_WWW_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' service-www))
-	$(eval DNS_RECORDS += certs|$(DOCKER_WWW_IP) www|$(DOCKER_WWW_IP))
 	$(Q)docker run -dit --name service-dns \
 		-e DOMAIN="$(DOMAIN)" \
 		-e DNS_RECORDS="$(DNS_RECORDS)" \
@@ -107,18 +105,18 @@ docker.www.run: docker.www
 #
 #  Clean
 #
-docker.clean: clean.certs docker.radius.clean docker.dns.clean docker.www.clean
+clean.docker: clean.certs clean.docker.radius clean.docker.dns clean.docker.www
 
-docker.radius.clean:
+clean.docker.radius:
 	$(Q)docker rm -f service-radius
 
-docker.dns.clean:
+clean.docker.dns:
 	$(Q)docker rm -f service-dns
 
-docker.www.clean:
+clean.docker.www:
 	$(Q)docker rm -f service-www
 
-docker.server.run: docker.clean docker.radius.run docker.dns.run docker.www.run
+docker.server.run: clean.docker docker.radius.run docker.dns.run docker.www.run
 
 #
 #  Client WPA
