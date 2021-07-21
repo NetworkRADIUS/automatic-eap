@@ -7,6 +7,10 @@ IPADDR=$(hostname -i)
 
 mkdir -p /etc/powerdns/pdns.d
 
+# let's use our own service
+echo "# Updated by $0" > /etc/resolv.conf
+echo "nameserver $IPADDR" >> /etc/resolv.conf
+
 # bootstrap
 rm -f /etc/powerdns/powerdns.sqlite3
 sqlite3 /etc/powerdns/powerdns.sqlite3 < /usr/share/doc/pdns-backend-sqlite3/schema.sqlite3.sql

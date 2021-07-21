@@ -89,7 +89,6 @@ docker.dns: docker.deps
 docker.dns.run: docker.dns docker.www.run
 	$(Q)docker rm -f service-dns
 	$(Q)docker run -dit --name service-dns --hostname service-dns \
-		--dns 127.0.0.1 \
 		-e DOMAIN="$(DOMAIN)" \
 		-e DNS_RECORDS="$(DNS_RECORDS)" \
 		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
