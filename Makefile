@@ -82,6 +82,7 @@ docker.dns: docker.deps
 
 docker.dns.run: docker.dns docker.www.run
 	$(Q)docker run -dit --name service-dns \
+		--dns 127.0.0.1 \
 		-e DOMAIN="$(DOMAIN)" \
 		-e DNS_RECORDS="$(DNS_RECORDS)" \
 		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
@@ -120,10 +121,10 @@ docker.server.run: clean.docker docker.radius.run docker.dns.run docker.www.run
 docker.client.eapol_test:
 	$(Q)docker build . -f docker/client/eapol_test/Dockerfile -t $(DOCKER_IMAGE_ROOT):client
 
-docker.client.run: docker.client.eapol_test
+docker.client.run: docker.client.eapol_test docker.server.run
+	$(eval DOCKER_DNS_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' service-dns))
+	$(eval DOCKER_RADIUS_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' service-radius))
 	$(Q)docker run -it --rm --name client \
-		-e DOMAIN="$(DOMAIN)" \
-		-e DNS_RECORDS="$(DNS_RECORDS)" \
-		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
-		-e DNS_CERT_SERVER_PATH="$(DNS_CERT_SERVER_PATH)" \
+		--dns $(DOCKER_DNS_IP) \
+		-e RADIUS_IP=$(DOCKER_RADIUS_IP) \
 		$(DOCKER_IMAGE_ROOT):client
