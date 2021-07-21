@@ -42,6 +42,9 @@ RUN pip3 install -r /tmp/requirements.txt && rm -f /tmp/requirements.txt
 ADD docker/client/automatic-eap/automatic-eap.py /usr/local/bin/
 RUN chmod +x /usr/local/bin/automatic-eap.py
 
+# leazy...
+ADD docker/client/automatic-eap/dot.bash_history /root/.bash_history
+
 WORKDIR /root
 
 CMD ["/bin/bash"]

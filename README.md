@@ -183,3 +183,22 @@ Received Access-Accept Id 205 from 172.17.0.2:1812 to 172.17.0.5:35867 length 32
 	Reply-Message = "Hello, bob"
 root@automatic-eap-client:~#
 ```
+
+You could see all these commands using the command 'history'
+
+e.g:
+
+```
+root@automatic-eap-client:~# history
+    1  automatic-eap.py --domain $DOMAIN --radius-server $RADIUS_IP --radius-user bob --radius-pass hello
+    2  eapol_test -c /tmp/automatic-eap/eapol_ttls-pap.conf -a $RADIUS_IP -s testing123 | tail
+    3  dig _ca._cert._eap.example.com CERT +short
+    4  dig _server._cert._eap.example.com CERT +short
+    5  dig _server._cert._eap.example.com CERT +short | sed 's/^IP.* 0 0 //g' | base64 -di
+    6  dig _ca._cert._eap.example.com CERT +short | sed 's/^IP.* 0 0 //g' | base64 -di
+    7  curl -s http://certs.example.com/.well-known/eap/server | head
+    8  curl -s http://certs.example.com/.well-known/est/cacerts | head
+    9  radtest bob hello $RADIUS_IP 0 testing123
+   10  history
+root@automatic-eap-client:~#
+```
