@@ -18,16 +18,16 @@ ARG DEBIAN_FRONTEND=noninteractive
 # install freeradius package
 #
 RUN apt-get -y update && \
-	apt-get -y install wpasupplicant hostapd libssl-dev python3-pip
+	apt-get -y install libssl-dev python3-pip
 
 #
 #  install eapol_test
 #
 WORKDIR /tmp
 RUN wget -O - https://w1.fi/releases/wpa_supplicant-2.9.tar.gz | tar -xzf -
-ADD docker/client/wpa/config_linux /tmp/wpa_supplicant-2.9/wpa_supplicant/.config
+ADD docker/client/eapol_test/config_linux /tmp/wpa_supplicant-2.9/wpa_supplicant/.config
 WORKDIR /tmp/wpa_supplicant-2.9/wpa_supplicant
-RUN	make -j4 eapol_test && cp eapol_test /usr/local/bin/eapol_test && rm -rf /tmp/wpa_supplicant-2.9/
+RUN	make -j4 eapol_test && cp eapol_test /usr/local/bin/eapol_test
 RUN rm -rf /tmp/wpa_supplicant-2.9/wpa_supplicant
 
 #

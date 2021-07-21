@@ -96,10 +96,6 @@ docker.www: docker.deps
 
 docker.www.run: docker.www
 	$(Q)docker run -dit --name service-www \
-		-e DOMAIN="$(DOMAIN)" \
-		-e DNS_RECORDS="$(DNS_RECORDS)" \
-		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
-		-e DNS_CERT_SERVER_PATH="$(DNS_CERT_SERVER_PATH)" \
 		-p 80:80/tcp $(DOCKER_IMAGE_ROOT):service-www
 
 #
@@ -119,15 +115,15 @@ clean.docker.www:
 docker.server.run: clean.docker docker.radius.run docker.dns.run docker.www.run
 
 #
-#  Client WPA
+#  Client eapol_test
 #
-docker.client.wpa:
-	$(Q)docker build . -f docker/client/wpa/Dockerfile -t $(DOCKER_IMAGE_ROOT):client-wpa
+docker.client.eapol_test:
+	$(Q)docker build . -f docker/client/eapol_test/Dockerfile -t $(DOCKER_IMAGE_ROOT):client
 
-docker.client.run: docker.client.wpa
-	$(Q)docker run -it --rm --name client-wpa \
+docker.client.run: docker.client.eapol_test
+	$(Q)docker run -it --rm --name client \
 		-e DOMAIN="$(DOMAIN)" \
 		-e DNS_RECORDS="$(DNS_RECORDS)" \
 		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
 		-e DNS_CERT_SERVER_PATH="$(DNS_CERT_SERVER_PATH)" \
-		$(DOCKER_IMAGE_ROOT):client-wpa
+		$(DOCKER_IMAGE_ROOT):client
