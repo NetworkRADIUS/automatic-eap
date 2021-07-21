@@ -159,6 +159,12 @@ def _main():
 		# Generate eapol_test.conf
 		#
 		print("\t[-] Build the 'eapol_test' config in \"{0}\"".format(args.eapol_conf))
+		print("\tFile: {0}".format(args.eapol_conf))
+		print("\tRadius Infos")
+		print("\t\tServer: {0}".format(args.radius_server))
+		print("\t\tSecret: {0}".format(args.radius_secret))
+		print("\t\tUser: {0}".format(args.radius_user))
+		print("\t\tPass: {0}".format(args.radius_pass))
 		create_eapol_conf(args, ca_cert_file, server_ca_file)
 
 		#
