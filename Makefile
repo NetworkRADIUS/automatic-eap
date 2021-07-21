@@ -2,18 +2,21 @@
 #  Copyright 2021 NetworkRADIUS SARL (legal@networkradius.com)
 #
 
-DOCKER_IMAGE_HUB := networkradius
-DOCKER_IMAGE_ROOT := $(DOCKER_IMAGE_HUB)/automatic-eap
-DOCKER_SUBNET := $(shell docker network inspect --format='{{range .IPAM.Config}}{{.Subnet}}{{end}}' bridge)
-
-# RADIUS Settings
-RADIUS_CLIENTS := "DockerSubnet01|$(DOCKER_SUBNET)|testing123"
-
 # DNS settings
 DOMAIN := example.com
 DNS_RECORDS := www certs foo|192.168.10.55 bar|192.168.10.52
 DNS_CERT_CA_PATH := http://certs.example.com/.well-known/est/cacerts
 DNS_CERT_SERVER_PATH := http://certs.example.com/.well-known/eap/server
+
+# Lookup the docker subnet
+DOCKER_SUBNET := $(shell docker network inspect --format='{{range .IPAM.Config}}{{.Subnet}}{{end}}' bridge)
+
+# RADIUS Settings
+RADIUS_CLIENTS := "DockerSubnet01|$(DOCKER_SUBNET)|testing123"
+
+# don't touch here
+DOCKER_IMAGE_HUB := networkradius
+DOCKER_IMAGE_ROOT := $(DOCKER_IMAGE_HUB)/automatic-eap
 
 #
 #  You can watch what it's doing by:
@@ -70,7 +73,8 @@ docker.radius: docker.deps
 	$(Q)docker build . -f docker/server/radius/Dockerfile -t $(DOCKER_IMAGE_ROOT):service-radius
 
 docker.radius.run: docker.radius
-	$(Q)docker run -dit --name service-radius \
+	$(Q)docker rm -f service-radius
+	$(Q)docker run -dit --name service-radius --hostname service-radius \
 		-e RADIUS_CLIENTS=$(RADIUS_CLIENTS) \
 		-p 1812-1813:1812-1813/udp $(DOCKER_IMAGE_ROOT):service-radius
 
@@ -78,10 +82,13 @@ docker.radius.run: docker.radius
 #  Dns
 #
 docker.dns: docker.deps
+	$(eval DOCKER_WWW_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' service-www))
+	$(eval DNS_RECORDS += certs|$(DOCKER_WWW_IP) www|$(DOCKER_WWW_IP)) # Create the dns records pointing to the www container
 	$(Q)docker build . -f docker/server/powerdns/Dockerfile -t $(DOCKER_IMAGE_ROOT):service-dns
 
 docker.dns.run: docker.dns docker.www.run
-	$(Q)docker run -dit --name service-dns \
+	$(Q)docker rm -f service-dns
+	$(Q)docker run -dit --name service-dns --hostname service-dns \
 		--dns 127.0.0.1 \
 		-e DOMAIN="$(DOMAIN)" \
 		-e DNS_RECORDS="$(DNS_RECORDS)" \
@@ -96,12 +103,20 @@ docker.www: docker.deps
 	$(Q)docker build . -f docker/server/nginx/Dockerfile -t $(DOCKER_IMAGE_ROOT):service-www
 
 docker.www.run: docker.www
-	$(Q)docker run -dit --name service-www \
+	$(Q)docker rm -f service-www
+	$(Q)docker run -dit --name service-www --hostname service-www \
 		-p 80:80/tcp $(DOCKER_IMAGE_ROOT):service-www
 
 #
 #  Clean
 #
+destroy:
+	$(Q)docker rmi -f $(DOCKER_IMAGE_ROOT):service-dns \
+						$(DOCKER_IMAGE_ROOT):service-www \
+						$(DOCKER_IMAGE_ROOT):service-radius \
+						$(DOCKER_IMAGE_ROOT):client \
+						$(DOCKER_IMAGE_ROOT):ubuntu20-deps
+
 clean.docker: clean.certs clean.docker.radius clean.docker.dns clean.docker.www
 
 clean.docker.radius:
@@ -113,7 +128,7 @@ clean.docker.dns:
 clean.docker.www:
 	$(Q)docker rm -f service-www
 
-docker.server.run: clean.docker docker.radius.run docker.dns.run docker.www.run
+docker.server.run: docker.radius.run docker.dns.run docker.www.run
 
 #
 #  Client eapol_test
@@ -124,7 +139,9 @@ docker.client.eapol_test:
 docker.client.run: docker.client.eapol_test docker.server.run
 	$(eval DOCKER_DNS_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' service-dns))
 	$(eval DOCKER_RADIUS_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' service-radius))
-	$(Q)docker run -it --rm --name client \
+	$(Q)docker run -it --rm --name client --hostname automatic-eap-client \
 		--dns $(DOCKER_DNS_IP) \
+		-e DOMAIN="$(DOMAIN)" \
 		-e RADIUS_IP=$(DOCKER_RADIUS_IP) \
+		-e DNS_IP=$(DOCKER_DNS_IP) \
 		$(DOCKER_IMAGE_ROOT):client
