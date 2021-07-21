@@ -89,6 +89,27 @@ root@automatic-eap-client:~#
 
 Once without errors, you should be able to authenticate with "eapol_test" using the generated _/tmp/automatic-eap/eapol_ttls-pap.conf_ config settings.
 
+Sample of generated eapol_ttls-pap.conf
+
+```
+root@automatic-eap-client:~# cat /tmp/automatic-eap/eapol_ttls-pap.conf
+#
+# Generated in /tmp/automatic-eap/eapol_ttls-pap.conf by Automatic-EAP
+#
+network={
+	key_mgmt=WPA-EAP
+	eap=TTLS
+	identity="bob"
+	anonymous_identity="anonymous@example.org"
+	ca_cert="/tmp/automatic-eap/cacerts"
+	password="hello"
+	phase2="auth=PAP"
+}
+root@automatic-eap-client:~#
+```
+
+therefore, just test using `eapol_test`
+
 ```
 root@automatic-eap-client:~# eapol_test -c /tmp/automatic-eap/eapol_ttls-pap.conf -a $RADIUS_IP -s testing123 | tai
 l -1
