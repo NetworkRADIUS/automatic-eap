@@ -27,9 +27,10 @@ dns_server = None
 
 def show_cert(_cert_file):
 	try:
+		print("\t[-] Showing certificate infos for \"{0}\"".format(_cert_file))
 		cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, open(_cert_file).read())
-		print("\t> Issued to = \"{0}\"".format(cert.get_subject().CN))
-		print("\t> Issued By = \"{0}\"".format(cert.get_issuer().CN))
+		print("\t > Issued to = \"{0}\"".format(cert.get_subject().CN))
+		print("\t > Issued By = \"{0}\"".format(cert.get_issuer().CN))
 	except Exception as e:
 		raise ValueError("Can't load certificate file: {0}, error {1}".format(_cert_file, e))
 
@@ -52,7 +53,7 @@ def downlod_file(_url, _dest):
 		if not os.path.isdir(_destdir):
 			os.mkdir(_destdir)
 
-		print("\t[-] Save \"{0}\" in \"{1}\"".format(_url, _destfile))
+		print("\t[-] Downloading \"{0}\" in \"{1}\"".format(_url, _destfile))
 		wget.download(_url, out = _destfile)
 		print()
 
@@ -65,7 +66,7 @@ def dns_get_cert_url(_type, _domain):
 	try:
 		res = dns.resolver.Resolver(configure=True)
 
-		print("\t[-] Lookup the domain: \"{0}\"".format(cert_domain))
+		print("\t[-] Lookup for 'CERT' DNS entry in: \"{0}\"".format(cert_domain))
 
 		if dns_server:
 			res.nameservers = [dns_server]
@@ -83,30 +84,33 @@ def dns_get_cert_url(_type, _domain):
 	except Exception as e:
 		raise ValueError("Can't resolve cert {0}, error {1}".format(cert_domain, e))
 
-def create_eapol_conf(_eapol_conf, _ca_cert, _server_cert, _radius_user, _radius_pass):
+def create_eapol_conf(args, _ca_cert, _server_cert):
 	try:
-		_destdir = os.path.dirname(_eapol_conf)
+		_destdir = os.path.dirname(args.eapol_conf)
 		if not os.path.isdir(_destdir):
 			os.mkdir(_destdir)
 
 		conf = """
 #
-# Generated in {3} by Automatic-EAP
+# Generated in {0} by Automatic-EAP
+#
+# e.g:
+#\teapol_test -c {0} -a {1} -s {2}
 #
 network={{
 \tkey_mgmt=WPA-EAP
 \teap=TTLS
-\tidentity=\"{0}\"
+\tidentity=\"{3}\"
 \tanonymous_identity="anonymous@example.org"
-\tca_cert=\"{2}\"
-\tpassword=\"{1}\"
+\tca_cert=\"{5}\"
+\tpassword=\"{4}\"
 \tphase2=\"auth=PAP\"
 }}\n"""
 
-		with open(_eapol_conf, 'w') as f:
-			f.write(conf.format(_radius_user, _radius_pass, _ca_cert, _eapol_conf))
+		with open(args.eapol_conf, 'w') as f:
+			f.write(conf.format(args.eapol_conf, args.radius_server, args.radius_secret, args.radius_user, args.radius_pass, _ca_cert))
 	except Exception as e:
-		raise ValueError("Can't create {0}, error {1}".format(_eapol_conf, e))
+		raise ValueError("Can't create {0}, error {1}".format(args.eapol_conf, e))
 
 def _main():
 	global dns_server
@@ -152,10 +156,10 @@ def _main():
 		show_cert(server_ca_file)
 
 		#
-		# Generate wpa_supplicant.conf
+		# Generate eapol_test.conf
 		#
-		print("\t[-] Generate the \"{0}\"".format(args.eapol_conf))
-		create_eapol_conf(args.eapol_conf, ca_cert_file, server_ca_file, args.radius_user, args.radius_pass)
+		print("\t[-] Build the 'eapol_test' config in \"{0}\"".format(args.eapol_conf))
+		create_eapol_conf(args, ca_cert_file, server_ca_file)
 
 		#
 		# Validate the connection
