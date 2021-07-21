@@ -141,6 +141,7 @@ docker.client.run: docker.client.eapol_test docker.server.run
 	$(Q)docker run -it --rm --name client --hostname automatic-eap-client \
 		--dns $(DOCKER_DNS_IP) \
 		-e DOMAIN="$(DOMAIN)" \
+		-e DNS_IP="$(DOCKER_DNS_IP)" \
 		-e RADIUS_IP=$(DOCKER_RADIUS_IP) \
 		-e DNS_IP=$(DOCKER_DNS_IP) \
 		$(DOCKER_IMAGE_ROOT):client
