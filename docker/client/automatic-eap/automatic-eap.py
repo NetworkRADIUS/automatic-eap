@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # Copyright 2021 NetworkRADIUS SARL (legal@networkradius.com)
-# Author: Jorge Pereira <jpereira@freeradius.org>
+# Author: Jorge Pereira <jpereira@networkradius.com>
+# Project: https://github.com/NetworkRADIUS/automatic-eap/
+#
 # -*- coding: utf-8 -*-
 #
 ###
 
+__project__ = "https://github.com/NetworkRADIUS/automatic-eap/"
 __author__ = "Jorge Pereira <jpereira@networkradius.com>"
 __version__ = "0.1a"
 
