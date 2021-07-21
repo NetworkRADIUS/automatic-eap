@@ -145,7 +145,7 @@ docker.server.run: docker.radius.run docker.dns.run docker.www.run
 #  Client automatic-eap.py & eapol_test
 #
 docker.client.eapol_test:
-	$(Q)docker build . -f docker/client/eapol_test/Dockerfile -t $(DOCKER_IMAGE_NAME):client
+	$(Q)docker build . -f docker/client/automatic-eap/Dockerfile -t $(DOCKER_IMAGE_NAME):client
 
 docker.client.run: docker.client.eapol_test docker.server.run
 	$(eval DOCKER_DNS_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' service-dns))
