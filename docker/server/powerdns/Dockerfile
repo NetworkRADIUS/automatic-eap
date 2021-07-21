@@ -15,14 +15,14 @@ ARG APT_OPTS="-y --option=Dpkg::options::=--force-unsafe-io --no-install-recomme
 ARG DEBIAN_FRONTEND=noninteractive
 
 #
-# install freeradius package
+# install PowerDNS package
 #
 #COPY docker/server/powerdns/pdns.list /etc/apt/sources.list.d/pdns.list
 #ADD docker/server/powerdns/pdns.preference /etc/apt/preferences.d/pdns 
 #RUN curl https://repo.powerdns.com/FD380FBB-pub.asc | apt-key add -
 
 RUN apt-get -y update && \
-	apt-get -y install pdns-server pdns-tools pdns-backend-sqlite3 sqlite3
+	apt-get -y install pdns-server pdns-recursor pdns-tools pdns-backend-sqlite3 sqlite3
 
 COPY docker/server/powerdns/config/ /etc/powerdns/
 

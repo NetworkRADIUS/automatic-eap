@@ -49,10 +49,16 @@ pdnsutil add-record ${DOMAIN} _server._cert._eap CERT "4 0 0 $(echo -n ${DNS_CER
 echo "-----------------------------------------------------"
 pdnsutil list-zone ${DOMAIN}
 echo "-----------------------------------------------------"
+
 #
 # Start PowerDNS
 # same as /etc/init.d/pdns monitor
 #
+
+echo "Starting PowerDNS Recursor"
+sed "s/@@DOMAIN@@/${DOMAIN}/g" -i /etc/powerdns/recursor.conf
+/etc/init.d/pdns-recursor start
+
 echo "Starting PowerDNS..."
 
 if [ "$#" -gt 0 ]; then
