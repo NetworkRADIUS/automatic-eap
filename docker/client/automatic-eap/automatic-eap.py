@@ -63,7 +63,7 @@ def downlod_file(_url, _dest):
 def dns_get_cert_url(_type, _domain):
 	cert_domain = "{0}.{1}".format(_type, _domain)
 	try:
-		res = dns.resolver.Resolver(configure=False)
+		res = dns.resolver.Resolver(configure=True)
 
 		print("\t[-] Lookup the domain: \"{0}\"".format(cert_domain))
 
