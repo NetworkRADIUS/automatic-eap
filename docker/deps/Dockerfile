@@ -21,6 +21,7 @@ RUN apt-get update && \
 #  Development utilities
     apt-get install $APT_OPTS \
     	apt-utils \
+        bind9-dnsutils \
         devscripts \
         equivs \
         git \
