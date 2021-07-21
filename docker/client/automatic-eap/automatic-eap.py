@@ -163,7 +163,7 @@ def _main():
 		#
 		print("\t[-] Build the 'eapol_test' config in \"{0}\"".format(args.eapol_conf))
 		print("\tFile: {0}".format(args.eapol_conf))
-		print("\tRadius Infos")
+		print("\tRadius Information")
 		print("\t\tServer: {0}".format(args.radius_server))
 		print("\t\tSecret: {0}".format(args.radius_secret))
 		print("\t\tUser: {0}".format(args.radius_user))

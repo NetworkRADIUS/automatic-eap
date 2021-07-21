@@ -1,12 +1,12 @@
 # Automatic EAP
 
-This repo provides a set of script and [Docker Containers](https://www.docker.com/resources/what-container) as a proof-of-concept to validate all the RFC [EAP Usability](https://datatracker.ietf.org/doc/draft-dekok-emu-eap-usability/) purpose.
+This repository provides a set of script and [Docker Containers](https://www.docker.com/resources/what-container) as a "proof-of-concept" which demonstrates the methods proposed in the [EAP Usability](https://datatracker.ietf.org/doc/draft-dekok-emu-eap-usability/) document.
 
 ## Brief
 
-The current containers are expected to running all services inside the same server using a single IP address. If you want to run separately, we are assuming that you know what you're doing.
+The current containers are expected to running all services inside the same server using a single IP address. If you want to run then on separate addresses, please root through the code to change it. :)
 
-## Build the Server
+## Building the Server
 
 1. Copy the repo.
 
@@ -15,32 +15,32 @@ $ git clone https://github.com/NetworkRADIUS/automatic-eap
 $ cd automatic-eap
 ```
 
-2. Adjust the client and server certificates. (Do not touch the fields where you find the *@@DOMAIN@@* placeholder)
+2. Edit the client and server certificates to add local information such as names, addresses, etc.  Do not touch the fields which have the *@@DOMAIN@@* placeholder, as they will be filled in automatically.
 
 ```
 $ vi certs/server.cnf.tpl
 $ vi certs/client.cnf.tpl
 ```
 
-even the `CA` certificate if desired.
+edit the `CA` certificate if desired:
 
 ```
 $ vi certs/ca.cnf
 ```
 
-3. Set the `DOMAIN=...` in `Makefile`
+3. Set the `DOMAIN=...` in the `Makefile`
 
 ```
 $ vi Makefile
 ```
 
-4. then, build the containers.
+4. then, build the containers:
 
 ```
 $ make docker.server.run
 ```
 
-It will build and start up three containers tagged as the below list.
+It will build and start up three containers tagged as given in the following list:
 
 Container  | Description
 ------------- | -------------
@@ -50,7 +50,7 @@ networkradius/automatic-eap:service-radius | FreeRADIUS service authenticating t
 
 ## Client
 
-The _client_ container is a Linux host prepared to execute the [automatic-eap.py](docker/client/automatic-eap/automatic-eap.py) script and the [eapol_test](http://deployingradius.com/scripts/eapol_test/) (EAP testing tool). That such container is configured to use our DNS and RADIUS server, those IP addresses can be accessed over the variables `$RADIUS_IP` and `$DNS_IP` (in this case, properly set in /etc/resolv.conf)
+The _client_ container is a Linux host which will run the [automatic-eap.py](docker/client/automatic-eap/automatic-eap.py) script, and the [eapol_test](http://deployingradius.com/scripts/eapol_test/) (EAP testing tool). The container is configured to use local DNS and RADIUS server, those IP addresses can be accessed over the variables `$RADIUS_IP` and `$DNS_IP` (in this case, set in /etc/resolv.conf)
 
 1. Start the _client_ container within 
 
@@ -58,7 +58,7 @@ The _client_ container is a Linux host prepared to execute the [automatic-eap.py
 $ make docker.client.run
 ```
 
-And execute the _automatic-eap.py_ to get similar output.
+Inside of the container, execute the _automatic-eap.py_ script to get output as follows:
 
 ```
 root@automatic-eap-client:~# automatic-eap.py --domain $DOMAIN --radius-server $RADIUS_IP --radius-user bob --radius-pass hello
@@ -87,7 +87,9 @@ root@automatic-eap-client:~# automatic-eap.py --domain $DOMAIN --radius-server $
 root@automatic-eap-client:~#
 ```
 
-Once without errors, you should be able to authenticate with "eapol_test" using the generated _/tmp/automatic-eap/eapol_ttls-pap.conf_ config settings.
+Once this has run, you should be able to authenticate with the
+`eapol_test` program, using the generated
+_/tmp/automatic-eap/eapol_ttls-pap.conf_ config settings.
 
 Sample of generated eapol_ttls-pap.conf
 
@@ -108,7 +110,7 @@ network={
 root@automatic-eap-client:~#
 ```
 
-therefore, just test using `eapol_test`
+Then, just test using `eapol_test`:
 
 ```
 root@automatic-eap-client:~# eapol_test -c /tmp/automatic-eap/eapol_ttls-pap.conf -a $RADIUS_IP -s testing123 | tai
@@ -119,7 +121,7 @@ root@automatic-eap-client:~#
 
 ## Tests
 
-Once logged in the _client container_ using `make docker.client.run`, we could see each steps described for EAP Usability described [here](https://datatracker.ietf.org/doc/draft-dekok-emu-eap-usability/) like:
+Once logged in the _client container_ using `make docker.client.run`, we can see each of steps described in the [EAP Usability](https://datatracker.ietf.org/doc/draft-dekok-emu-eap-usability/) document, such as:
 
 
 1. Checking the DNS _CERT_ entries using the *dig* tool:
@@ -132,7 +134,7 @@ IPKIX 0 0 aHR0cDovL2NlcnRzLmV4YW1wbGUuY29tLy53ZWxsLWtub3duL2VzdC9jYWNlcnRz
 root@automatic-eap-client:~#
 ```
 
-1.2. for *_server._cert._eap.example.com*
+1.2. Checking for *_server._cert._eap.example.com*
 
 ```
 root@automatic-eap-client:~# dig _server._cert._eap.example.com CERT +short
@@ -154,9 +156,9 @@ http://certs.example.com/.well-known/est/cacerts
 root@automatic-eap-client:~#
 ```
 
-2. Checking the certificate URL.
+2. Checking the certificate URLs
 
-The server certificate
+The server certificate:
 
 ```
 root@automatic-eap-client:~# curl -s http://certs.example.com/.well-known/eap/server | head
@@ -205,7 +207,7 @@ Received Access-Accept Id 205 from 172.17.0.2:1812 to 172.17.0.5:35867 length 32
 root@automatic-eap-client:~#
 ```
 
-You could see all these commands using the command 'history'
+You can see all these commands using the command 'history'
 
 e.g:
 
