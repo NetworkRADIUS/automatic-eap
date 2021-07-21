@@ -117,6 +117,7 @@ def _main():
 	parser.add_argument("-c", "--cert-dest", dest = "cert_dest", help = "Certificate destination directory.", required = False, default = DEST_DIR)
 	parser.add_argument("-H", "--overwrite-dns-cert-host", dest = "url_host", help = "Overwrite the HOST from DNS/CERT reply.", required = False)
 	parser.add_argument("-w", "--eapol-test-conf", dest = "eapol_conf", help = "Destination of generated eapol_test.conf file.", default = DEST_DIR+"/eapol_ttls-pap.conf", required = False)
+	parser.add_argument("-E", "--eapol-example", dest = "eapol_example", help = "Print out example of eapol_test execution..", required = False)
 	parser.add_argument("-S", "--radius-server", dest = "radius_server", help = "RADIUS Server", default = "localhost", required = True)
 	parser.add_argument("-e", "--radius-secret", dest = "radius_secret", help = "RADIUS Secret", default = "testing123", required = False)
 	parser.add_argument("-u", "--radius-user", dest = "radius_user", help = "RADIUS User", required = True)
@@ -159,8 +160,9 @@ def _main():
 		#
 		# Validate the connection
 		#
-		print("# Command to validate:")
-		print("eapol_test -c {0} -a {1} -s {2}".format(args.eapol_conf, args.radius_server, args.radius_secret))
+		if args.eapol_example:
+			print("# Command to validate:")
+			print("eapol_test -c {0} -a {1} -s {2}".format(args.eapol_conf, args.radius_server, args.radius_secret))
 
 	except Exception as e:
 		print("** ERROR: {0}".format(str(e)))
