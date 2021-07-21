@@ -104,14 +104,14 @@ network={{
 \tkey_mgmt=WPA-EAP
 \teap=TTLS
 \tidentity=\"{3}\"
-\tanonymous_identity="@example.org"
-\tca_cert=\"{5}\"
+\tanonymous_identity="@{5}"
+\tca_cert=\"{6}\"
 \tpassword=\"{4}\"
 \tphase2=\"auth=PAP\"
 }}\n"""
 
 		with open(args.eapol_conf, 'w') as f:
-			f.write(conf.format(args.eapol_conf, args.radius_server, args.radius_secret, args.radius_user, args.radius_pass, _ca_cert))
+			f.write(conf.format(args.eapol_conf, args.radius_server, args.radius_secret, args.radius_user, args.radius_pass, args.domain, _ca_cert))
 	except Exception as e:
 		raise ValueError("Can't create {0}, error {1}".format(args.eapol_conf, e))
 
