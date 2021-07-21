@@ -100,7 +100,7 @@ network={
 	key_mgmt=WPA-EAP
 	eap=TTLS
 	identity="bob"
-	anonymous_identity="anonymous@example.org"
+	anonymous_identity="@example.org"
 	ca_cert="/tmp/automatic-eap/cacerts"
 	password="hello"
 	phase2="auth=PAP"

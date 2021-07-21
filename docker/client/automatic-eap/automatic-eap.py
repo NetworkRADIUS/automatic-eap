@@ -104,7 +104,7 @@ network={{
 \tkey_mgmt=WPA-EAP
 \teap=TTLS
 \tidentity=\"{3}\"
-\tanonymous_identity="anonymous@example.org"
+\tanonymous_identity="@example.org"
 \tca_cert=\"{5}\"
 \tpassword=\"{4}\"
 \tphase2=\"auth=PAP\"
