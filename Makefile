@@ -31,7 +31,7 @@ endif
 
 .PHONY = deps
 # Test if the dependencies we need to run this Makefile are installed
-DOCKER := $(shell which daaocker 1> /dev/null 2>&1)
+DOCKER := $(shell which docker 1> /dev/null 2>&1)
 deps:
 ifndef DOCKER
 	@echo "Docker is not available. Please install docker"
