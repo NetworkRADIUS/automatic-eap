@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Copyright 2021 NetworkRADIUS SARL (legal@networkradius.com)
 # Author: Jorge Pereira <jpereira@networkradius.com>
 # Project: https://github.com/NetworkRADIUS/automatic-eap/
 #
-# -*- coding: utf-8 -*-
+# It is a POC which demonstrates the methods proposed in the EAP Usability
+# https://datatracker.ietf.org/doc/draft-dekok-emu-eap-usability/.
 #
 ###
 
@@ -63,7 +65,10 @@ def downlod_file(_url, _dest):
 		return _destfile
 	except Exception as e:
 		raise ValueError("Can't download {0} in {1}, error {2}".format(_url, _dest, e))
-
+#
+# As the page 30 in https://datatracker.ietf.org/doc/draft-dekok-emu-eap-usability/
+# 6.2.  Bootstrapping via DNS ...............................   30
+#
 def dns_get_cert_url(_type, _domain):
 	cert_domain = "{0}.{1}".format(_type, _domain)
 	try:
