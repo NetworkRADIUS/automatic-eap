@@ -36,10 +36,10 @@ RUN chmod 0644 /var/www/html/.well-known/eap/server \
                /var/www/html/.well-known/est/cacerts
 
 # Update the index.html
-ADD docker/server/nginx/index.html /var/www/html/index.html
+ADD docker/server/www/index.html /var/www/html/index.html
 
 # Start scripts
-ADD docker/server/nginx/start.sh /usr/local/bin/start.sh
+ADD docker/server/www/start.sh /usr/local/bin/start.sh
 RUN chmod a+x /usr/local/bin/*.sh
 
 EXPOSE 80:80/tcp

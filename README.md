@@ -44,9 +44,9 @@ It will build and start up three containers tagged as given in the following lis
 
 Container  | Description
 ------------- | -------------
-networkradius/automatic-eap:service-www | NGINX service providing the cert files over the URL. e.g: http://certs.example.com/
-networkradius/automatic-eap:service-dns | PowerDNS service providing the DNS service with the `_ca._cert._eap.example.com` and `_server._cert._eap.example.com` _IPKIX_ entries within a base64 string being the URL. e.g: `http://certs.example.com/.well-known/est/cacerts`
-networkradius/automatic-eap:service-radius | FreeRADIUS service authenticating the `TTLS-PAP`, by default the user is `bob` and password is `hello` as it could be add extras users in [/etc/freeradius/mods-config/files/authorize](docker/server/radius/config/etc/freeradius/mods-config/files/authorize)
+networkradius/automatic-eap:server-www | NGINX service providing the cert files over the URL. e.g: http://certs.example.com/
+networkradius/automatic-eap:server-dns | PowerDNS service providing the DNS service with the `_ca._cert._eap.example.com` and `_server._cert._eap.example.com` _IPKIX_ entries within a base64 string being the URL. e.g: `http://certs.example.com/.well-known/est/cacerts`
+networkradius/automatic-eap:server-radius | FreeRADIUS service authenticating the `TTLS-PAP`, by default the user is `bob` and password is `hello` as it could be add extras users in [/etc/freeradius/mods-config/files/authorize](docker/server/radius/config/etc/freeradius/mods-config/files/authorize)
 
 ## Client
 
@@ -58,7 +58,7 @@ The _client_ container is a Linux host which will run the [automatic-eap.py](doc
 $ make docker.client.run
 ```
 
-Inside of the container, execute the _automatic-eap.py_ script to get output as follows:
+Inside of the container, execute the [automatic-eap.py](docker/client/automatic-eap/automatic-eap.py) script to get output as follows:
 
 ```
 root@automatic-eap-client:~# automatic-eap.py --domain $DOMAIN --radius-server $RADIUS_IP --radius-user bob --radius-pass hello

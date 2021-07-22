@@ -25,8 +25,10 @@ RADIUS_CLIENTS := "DockerSubnet01|$(DOCKER_SUBNET)|testing123"
 #
 ifeq "${VERBOSE}" ""
     Q=@
+    DEST=1> /dev/null 2>&1
 else
     Q=
+    DEST=
 endif
 
 .PHONY = deps
@@ -40,11 +42,13 @@ endif
 
 .PHONY: help
 help:
-	@echo "help            - print this"
-	@echo "docker.deps     - Build the 'deps' container image"
-	@echo "docker.radius   - Build the 'radius' container image"
-	@echo "docker.dns      - Build the 'dns' container image"
-	@echo "docker.www      - Build the 'www' container image"
+	@echo "help               - print this."
+	@echo "docker.server.run  - Build and start up the servers containers."
+	@echo "docker.client.run  - Build and start up the client instance."
+	@echo "destroy            - Delete all instances and created images."
+	@echo "clean.docker       - Just remove all started instances."
+	@echo "build.certs        - Build the certificates in certs/."
+	@echo "clean.certs        - Clean up the created certificates in certs/"
 
 .DEFAULT_GOAL := help
 
@@ -52,108 +56,100 @@ ifeq "$(DOMAIN)" ""
 	$(error We can't go without the DOMAIN=... parameter)
 endif
 
-docker: docker.radius docker.dns
+#
+#  Clean & Destroy
+#
+clean: help
 
-#
-#  Deps
-#
-docker.deps: build.certs
-	$(Q)docker build . -f docker/deps/Dockerfile -t $(DOCKER_IMAGE_NAME):ubuntu20-deps
+clean.docker.instance.%:
+	$(Q)docker rm -f automatic-eap-$* 1> /dev/null 2>&1
+
+clean.docker.instances: clean.docker.instance.client clean.docker.instance.server-radius clean.docker.instance.server-dns clean.docker.instance.server-www
+
+clean.docker.image.%:
+	$(Q)docker rmi -f $(DOCKER_IMAGE_NAME):$* 1> /dev/null 2>&1
+
+clean.docker.images: clean.docker.image.client clean.docker.image.server-radius clean.docker.image.server-dns clean.docker.image.server-www clean.docker.image.ubuntu20-deps
+
+destroy: clean.docker.instances clean.docker.images
+	@rm -rf build
+
+clean.docker: clean.certs clean.docker.instances
 
 #
 #  Certificates
 #
-certs/client.cnf:
-	$(Q)sed "s/@@DOMAIN@@/$(DOMAIN)/g" < certs/client.cnf.tpl > certs/client.cnf
+certs/%.cnf:
+	$(Q)sed "s/@@DOMAIN@@/$(DOMAIN)/g" < certs/$*.cnf.tpl > certs/$*.cnf
 
-certs/server.cnf:
-	$(Q)sed "s/@@DOMAIN@@/$(DOMAIN)/g" < certs/server.cnf.tpl > certs/server.cnf
+clean.certs:
+	$(Q)touch certs/client.cnf certs/server.cnf # Needed by certs/Makefile
+	$(Q)make -C certs/ destroycerts
 
 build.certs: certs/client.cnf certs/server.cnf
 	$(Q)make -C certs/ DH_KEY_SIZE=2048 all
 
-clean.certs.cnf:
-	$(Q)rm -f certs/server.cnf certs/client.cnf
+#
+#  Docker Build
+#
+build/docker.deps:
+	$(Q)docker build . -f docker/deps/Dockerfile -t $(DOCKER_IMAGE_NAME):ubuntu20-deps $(DEST)
+	$(Q)mkdir -p $(dir $@)
+	$(Q)touch $@
 
-clean.certs: clean.certs.cnf certs/client.cnf certs/server.cnf
-	$(Q)make -C certs/ destroycerts
+docker.build.%: build.certs build/docker.deps
+	@echo "Build Docker server-$*"
+	$(Q)docker build . -f docker/server/$*/Dockerfile -t $(DOCKER_IMAGE_NAME):server-$* $(DEST)
 
 #
 #  Radius
 #
-docker.radius: docker.deps
-	$(Q)docker build . -f docker/server/radius/Dockerfile -t $(DOCKER_IMAGE_NAME):service-radius
-
-docker.radius.run: docker.radius
-	$(Q)docker rm -f service-radius
-	$(Q)docker run -dit --name service-radius --hostname service-radius \
+docker.radius.run: clean.docker.instance.server-radius docker.build.radius
+	@echo "Start Docker RADIUS Server"
+	$(Q)docker run -dit --name automatic-eap-server-radius --hostname automatic-eap-server-radius \
 		-e RADIUS_CLIENTS=$(RADIUS_CLIENTS) \
-		-p 1812-1813:1812-1813/udp $(DOCKER_IMAGE_NAME):service-radius
+		-p 1812-1813:1812-1813/udp $(DOCKER_IMAGE_NAME):server-radius $(DEST)
 
 #
 #  Dns
 #
-docker.dns: docker.deps
-	$(eval DOCKER_WWW_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' service-www))
+docker.dns.run: clean.docker.instance.server-dns docker.build.dns
+	@echo "Start Docker DNS Server"
+	$(eval DOCKER_WWW_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' automatic-eap-server-www))
 	$(eval DNS_RECORDS += certs|$(DOCKER_WWW_IP) www|$(DOCKER_WWW_IP)) # Create the dns records pointing to the www container
-	$(Q)docker build . -f docker/server/powerdns/Dockerfile -t $(DOCKER_IMAGE_NAME):service-dns
-
-docker.dns.run: docker.dns docker.www.run
-	$(Q)docker rm -f service-dns
-	$(Q)docker run -dit --name service-dns --hostname service-dns \
+	$(Q)docker run -dit --name automatic-eap-server-dns --hostname automatic-eap-server-dns \
 		-e DOMAIN="$(DOMAIN)" \
 		-e DNS_RECORDS="$(DNS_RECORDS)" \
 		-e DNS_CERT_CA_PATH="$(DNS_CERT_CA_PATH)" \
 		-e DNS_CERT_SERVER_PATH="$(DNS_CERT_SERVER_PATH)" \
-		-p 53:53/udp $(DOCKER_IMAGE_NAME):service-dns
+		-p 53:53/udp $(DOCKER_IMAGE_NAME):server-dns $(DEST)
 
 #
 #  wwww
 #
-docker.www: docker.deps
-	$(Q)docker build . -f docker/server/nginx/Dockerfile -t $(DOCKER_IMAGE_NAME):service-www
-
-docker.www.run: docker.www
-	$(Q)docker rm -f service-www
-	$(Q)docker run -dit --name service-www --hostname service-www \
-		-p 80:80/tcp $(DOCKER_IMAGE_NAME):service-www
+docker.www.run: clean.docker.instance.server-www docker.build.www
+	@echo "Start Docker WWW Server"
+	$(Q)docker run -dit --name automatic-eap-server-www --hostname automatic-eap-server-www \
+		-p 80:80/tcp $(DOCKER_IMAGE_NAME):server-www $(DEST)
 
 #
-#  Clean
+#  Server Run
 #
-destroy:
-	$(Q)docker rmi -f $(DOCKER_IMAGE_NAME):service-dns \
-						$(DOCKER_IMAGE_NAME):service-www \
-						$(DOCKER_IMAGE_NAME):service-radius \
-						$(DOCKER_IMAGE_NAME):client \
-						$(DOCKER_IMAGE_NAME):ubuntu20-deps
-
-clean.docker: clean.certs clean.docker.radius clean.docker.dns clean.docker.www
-
-clean.docker.radius:
-	$(Q)docker rm -f service-radius
-
-clean.docker.dns:
-	$(Q)docker rm -f service-dns
-
-clean.docker.www:
-	$(Q)docker rm -f service-www
-
-docker.server.run: docker.radius.run docker.dns.run docker.www.run
+docker.server.run: docker.radius.run docker.www.run docker.dns.run
 
 #
 #  Client automatic-eap.py & eapol_test
 #
-docker.client.eapol_test:
-	$(Q)docker build . -f docker/client/automatic-eap/Dockerfile -t $(DOCKER_IMAGE_NAME):client
+docker.client:
+	$(Q)docker build . -f docker/client/automatic-eap/Dockerfile -t $(DOCKER_IMAGE_NAME):client $(DEST)
 
-docker.client.run: docker.client.eapol_test docker.server.run
-	$(eval DOCKER_DNS_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' service-dns))
-	$(eval DOCKER_RADIUS_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' service-radius))
-	$(Q)docker run -it --rm --name client --hostname automatic-eap-client \
+docker.client.run: clean.docker.instance.client docker.server.run docker.client
+	@echo "Start Docker Client"
+	$(eval DOCKER_DNS_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' automatic-eap-server-dns))
+	$(eval DOCKER_RADIUS_IP = $(shell docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' automatic-eap-server-radius))
+	$(Q)docker run -it --rm --name automatic-eap-client --hostname automatic-eap-client \
 		--dns $(DOCKER_DNS_IP) \
 		-e DOMAIN="$(DOMAIN)" \
 		-e DNS_IP="$(DOCKER_DNS_IP)" \
 		-e RADIUS_IP=$(DOCKER_RADIUS_IP) \
-		-e DNS_IP=$(DOCKER_DNS_IP) \
 		$(DOCKER_IMAGE_NAME):client
