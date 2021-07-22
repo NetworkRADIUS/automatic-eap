@@ -44,11 +44,14 @@ endif
 help:
 	@echo "help               - print this."
 	@echo "docker.server.run  - Build and start up the servers containers."
+	@echo "docker.server.stop - Stop all servers containers."
 	@echo "docker.client.run  - Build and start up the client instance."
 	@echo "destroy            - Delete all instances and created images."
 	@echo "clean.docker       - Just remove all started instances."
 	@echo "build.certs        - Build the certificates in certs/."
 	@echo "clean.certs        - Clean up the created certificates in certs/"
+	@echo
+	@echo "  Use the Q= if you want to see the logs"
 
 .DEFAULT_GOAL := help
 
@@ -61,13 +64,17 @@ endif
 #
 clean: help
 
+clean.docker.stop.%:
+	@echo "Stopping Docker automatic-eap-$*"
+	$(Q)docker stop automatic-eap-$* $(DEST)
+
 clean.docker.instance.%:
-	$(Q)docker rm -f automatic-eap-$* 1> /dev/null 2>&1
+	$(Q)docker rm -f automatic-eap-$* $(DEST)
 
 clean.docker.instances: clean.docker.instance.client clean.docker.instance.server-radius clean.docker.instance.server-dns clean.docker.instance.server-www
 
 clean.docker.image.%:
-	$(Q)docker rmi -f $(DOCKER_IMAGE_NAME):$* 1> /dev/null 2>&1
+	$(Q)docker rmi -f $(DOCKER_IMAGE_NAME):$* $(DEST)
 
 clean.docker.images: clean.docker.image.client clean.docker.image.server-radius clean.docker.image.server-dns clean.docker.image.server-www clean.docker.image.ubuntu20-deps
 
@@ -136,6 +143,8 @@ docker.www.run: clean.docker.instance.server-www docker.build.www
 #  Server Run
 #
 docker.server.run: docker.radius.run docker.www.run docker.dns.run
+
+docker.server.stop: clean.docker.stop.server-radius clean.docker.stop.server-dns clean.docker.stop.server-www
 
 #
 #  Client automatic-eap.py & eapol_test
