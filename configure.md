@@ -29,6 +29,14 @@ $ vi certs/ca.cnf
 
 ```
 $ vi Makefile
+...
+# DNS settings
+DOMAIN := example.com
+DNS_RECORDS := www certs foo|192.168.10.55 bar|192.168.10.52
+DNS_CERT_CA_PATH := http://certs.example.com/.well-known/est/cacerts
+DNS_CERT_SERVER_PATH := http://certs.example.com/.well-known/eap/server
 ```
 
-Then, build the [server containers](server.md)
+Then, build the [server containers](server.md).  The build scripts
+will take those parameters, and create the necessary DNS zones, web
+sites, etc.

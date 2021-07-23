@@ -23,7 +23,7 @@ Behind the scenes, the system runs a utility which does:
 
 Please read the [EAP
 Usability](https://datatracker.ietf.org/doc/draft-dekok-emu-eap-usability/)
-for a complete technical description.
+document for a complete technical description.
 
 Note that in this entire process, all that the user has done is to
 enter two pieces of information: _name_, and _password_.  Pretty much
