@@ -2,7 +2,7 @@
 
 ![Network RADIUS Logo](img/networkradius-logo.png)
 
-This repository provides a set of script and [Docker Containers](https://www.docker.com/resources/what-container) as a "proof-of-concept" which demonstrates the methods proposed in the [EAP Usability](https://datatracker.ietf.org/doc/draft-dekok-emu-eap-usability/) document.
+This [repository](https://github.com/NetworkRADIUS/automatic-eap/) provides a set of script and [Docker Containers](https://www.docker.com/resources/what-container) as a "proof-of-concept" which demonstrates the methods proposed in the [EAP Usability](https://datatracker.ietf.org/doc/draft-dekok-emu-eap-usability/) document.
 
 ## What is this?
 
