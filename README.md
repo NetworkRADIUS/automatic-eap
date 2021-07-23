@@ -45,3 +45,4 @@ This should work on most Linux systems, and on OSX.
   CERT records, download the certificates, and create the `eapol_test`
   configuration file
 * run [eapol_test](eapol_test.md) in order to verify that it works.
+* see [how it works](explaination.md]

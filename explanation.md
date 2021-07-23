@@ -5,9 +5,9 @@ WiFi access.
 
 Behind the scenes, the system runs a utility which does:
 
-* DNS lookups for various magical things in the `example.com` domain
+* DNS lookups for various CERT records in the `example.com` domain
 
-* discovers that those magical things point to certificates on the web
+* discovers that those CERT records point to certificates on the web
 
 * downloads those certificates
 
