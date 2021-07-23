@@ -9,3 +9,9 @@ SUCCESS
 root@automatic-eap-client:~#
 ```
 
+For testing, the password is hard-coded in the `eapol_ttls-pap.conf` file.
+
+In the real world, the EAP client would prompt the user for a
+password.
+
+[How does this work](explanation.md)?
