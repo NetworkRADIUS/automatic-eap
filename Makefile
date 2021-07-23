@@ -78,8 +78,8 @@ clean.docker.image.%:
 
 clean.docker.images: clean.docker.image.client clean.docker.image.server-radius clean.docker.image.server-dns clean.docker.image.server-www clean.docker.image.ubuntu20-deps
 
-destroy: clean.docker.instances clean.docker.images
-	@rm -rf build
+destroy: clean.docker.instances clean.docker.images clean.certs
+	$(Q)rm -rf build
 
 clean.docker: clean.certs clean.docker.instances
 
@@ -94,7 +94,8 @@ clean.certs:
 	$(Q)make -C certs/ destroycerts
 
 build.certs: certs/client.cnf certs/server.cnf
-	$(Q)make -C certs/ DH_KEY_SIZE=2048 all
+	@echo "Build the certificates"
+	$(Q)make -C certs/ DH_KEY_SIZE=2048 all $(DEST)
 
 #
 #  Docker Build
