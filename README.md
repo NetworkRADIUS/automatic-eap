@@ -6,10 +6,13 @@ This repository provides a set of script and [Docker Containers](https://www.doc
 
 ## What is this?
 
-802.1X / EAP is hard to use and configure.  This repository includes
-sample code which shows that it can be _trivial_ to configure client
-systems for many EAP types.  All that is required is that the client
-system have:
+Historically, 802.1X / EAP has been difficult to configure and use securely.
+
+Until now.
+
+This repository contains sample code which shows that it can be
+_trivial_ to configure client systems for many EAP types.  All that is
+required is that the client system have:
 
 1. A web root CA, so that it can securely verify web sites for downloads
 2. a network connection
