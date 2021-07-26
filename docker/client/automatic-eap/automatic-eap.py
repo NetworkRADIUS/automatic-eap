@@ -23,12 +23,160 @@ import sys
 import shutil
 import traceback
 import wget
+import uuid
 
 from urllib.parse import urlparse
 
 DEST_DIR = "/tmp/automatic-eap"
 
 dns_server = None
+
+def create_mobileconfig(args, _ca_cert, _server_cert):
+	try:
+		_destdir = os.path.dirname(args.output_file)
+		if not os.path.isdir(_destdir):
+			os.mkdir(_destdir)
+
+		conf = """
+<!-- Generated in {0} by Automatic-EAP -->
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>AutoJoin</key>
+			<true/>
+			<key>CaptiveBypass</key>
+			<false/>
+			<key>DisableAssociationMACRandomization</key>
+			<false/>
+			<key>EAPClientConfiguration</key>
+			<dict>
+				<key>AcceptEAPTypes</key>
+				<array>
+					<integer>21</integer>
+				</array>
+				<key>PayloadCertificateAnchorUUID</key>
+				<array>
+					<string>{1}</string>
+				</array>
+				<key>TLSMaximumVersion</key>
+				<string>1.2</string>
+				<key>TLSMinimumVersion</key>
+				<string>1.0</string>
+				<key>TLSTrustedServerNames</key>
+				<array>
+					<string>Certificate Common Name 2</string>
+				</array>
+				<key>TTLSInnerAuthentication</key>
+				<string>PAP</string>
+				<key>UserName</key>
+				<string>{2}</string>
+				<key>UserPassword</key>
+				<string>{3}</string>
+			</dict>
+			<key>EncryptionType</key>
+			<string>WPA</string>
+			<key>HIDDEN_NETWORK</key>
+			<false/>
+			<key>IsHotspot</key>
+			<false/>
+			<key>PayloadDescription</key>
+			<string>Configures Wi-Fi settings</string>
+			<key>PayloadDisplayName</key>
+			<string>Wi-Fi</string>
+			<key>PayloadIdentifier</key>
+			<string>com.apple.wifi.managed.{4}</string>
+			<key>PayloadType</key>
+			<string>com.apple.wifi.managed</string>
+			<key>PayloadUUID</key>
+			<string>{4}</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+			<key>ProxyType</key>
+			<string>None</string>
+			<key>SSID_STR</key>
+			<string>SSID_NAME</string>
+		</dict>
+		<dict>
+			<key>PayloadCertificateFileName</key>
+			<string>cacerts.crt</string>
+			<key>PayloadContent</key>
+			<data>
+			{5}
+			</data>
+			<key>PayloadDescription</key>
+			<string>Adds a CA root certificate</string>
+			<key>PayloadDisplayName</key>
+			<string>Example Automatic-EAP Certificate Authority</string>
+			<key>PayloadIdentifier</key>
+			<string>com.apple.security.root.{6}</string>
+			<key>PayloadType</key>
+			<string>com.apple.security.root</string>
+			<key>PayloadUUID</key>
+			<string>{6}</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>PayloadDisplayName</key>
+	<string>{7}</string>
+	<key>PayloadIdentifier</key>
+	<string>Automatic-EAP.12345</string>
+	<key>PayloadRemovalDisallowed</key>
+	<false/>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadUUID</key>
+	<string>{8}2</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+</plist>
+\n"""
+
+		with open(args.output_file, 'w') as f:
+			cert_file = open(_ca_cert, 'rb')
+			cert_data = base64.b64encode(cert_file.read()).decode('ascii')
+			cert_enco = '\n\t\t\t'.join(cert_data[i:i+52] for i in range(0, len(cert_data), 52))
+			uuid1 = str(uuid.uuid4()).upper()
+			uuid2 = str(uuid.uuid4()).upper()
+			uuid3 = str(uuid.uuid4()).upper()
+			uuid4 = str(uuid.uuid4()).upper()
+			f.write(conf.format(args.output_file, uuid1, args.wifi_username, args.wifi_password,
+								uuid2, cert_enco, uuid3, args.wifi_ssid, uuid4))
+	except Exception as e:
+		raise ValueError("Can't create {0}, error {1}".format(args.output_file, e))
+
+def create_eapol_conf(args, _ca_cert, _server_cert):
+	try:
+		_destdir = os.path.dirname(args.output_file)
+		if not os.path.isdir(_destdir):
+			os.mkdir(_destdir)
+
+		conf = """
+#
+# Generated in {0} by Automatic-EAP
+#
+# e.g:
+#\teapol_test -c {0} -a {1} -s {2}
+#
+network={{
+\tkey_mgmt=WPA-EAP
+\teap=TTLS
+\tidentity=\"{3}\"
+\tanonymous_identity="@{5}"
+\tca_cert=\"{6}\"
+\tpassword=\"{4}\"
+\tphase2=\"auth=PAP\"
+}}\n"""
+
+		with open(args.output_file, 'w') as f:
+			f.write(conf.format(args.output_file, args.radius_server, args.radius_secret, args.radius_user, args.radius_pass, args.domain, _ca_cert))
+	except Exception as e:
+		raise ValueError("Can't create {0}, error {1}".format(args.output_file, e))
 
 def show_cert(_cert_file):
 	try:
@@ -92,45 +240,20 @@ def dns_get_cert_url(_type, _domain):
 	except Exception as e:
 		raise ValueError("Can't resolve cert {0}, error {1}".format(cert_domain, e))
 
-def create_eapol_conf(args, _ca_cert, _server_cert):
-	try:
-		_destdir = os.path.dirname(args.eapol_conf)
-		if not os.path.isdir(_destdir):
-			os.mkdir(_destdir)
-
-		conf = """
-#
-# Generated in {0} by Automatic-EAP
-#
-# e.g:
-#\teapol_test -c {0} -a {1} -s {2}
-#
-network={{
-\tkey_mgmt=WPA-EAP
-\teap=TTLS
-\tidentity=\"{3}\"
-\tanonymous_identity="@{5}"
-\tca_cert=\"{6}\"
-\tpassword=\"{4}\"
-\tphase2=\"auth=PAP\"
-}}\n"""
-
-		with open(args.eapol_conf, 'w') as f:
-			f.write(conf.format(args.eapol_conf, args.radius_server, args.radius_secret, args.radius_user, args.radius_pass, args.domain, _ca_cert))
-	except Exception as e:
-		raise ValueError("Can't create {0}, error {1}".format(args.eapol_conf, e))
-
 def _main():
 	global dns_server
 
 	parser = argparse.ArgumentParser(description = "Bootstrap Automatic-EAP informations automatically")
 	parser.add_argument("-d", "--domain", dest = "domain", help = "Domain to bootstrap the Automatic-EAP", required = True)
-	parser.add_argument("-s", "--dns-server", dest = "dns_server", help = "DNS server address to use.", required = False)
+	parser.add_argument("-n", "--dns-server", dest = "dns_server", help = "DNS server address to use.", required = False)
 	parser.add_argument("-c", "--cert-dest", dest = "cert_dest", help = "Certificate destination directory.", required = False, default = DEST_DIR)
 	parser.add_argument("-H", "--overwrite-dns-cert-host", dest = "url_host", help = "Overwrite the HOST from DNS/CERT reply.", required = False)
-	parser.add_argument("-w", "--eapol-test-conf", dest = "eapol_conf", help = "Destination of generated eapol_test.conf file.", default = DEST_DIR+"/eapol_ttls-pap.conf", required = False)
-	parser.add_argument("-E", "--eapol-example", dest = "eapol_example", help = "Print out example of eapol_test execution..", required = False)
-	parser.add_argument("-S", "--radius-server", dest = "radius_server", help = "RADIUS Server", default = "localhost", required = True)
+	parser.add_argument("-t", "--config-type", dest = "config_type", help = "It must be 'eapol_test' or 'mobileconfig'", default = "eapol_test", required = False)
+	parser.add_argument("-o", "--output-file", dest = "output_file", help = "Destination of generated eapol_test.conf file.", default = DEST_DIR+"/eapol_ttls-pap.conf", required = False)
+	parser.add_argument("-S", "--wifi-ssid", dest = "wifi_ssid", help = "Wi-Fi SSID", required = False)
+	parser.add_argument("-U", "--wifi-username", dest = "wifi_username", help = "Wi-Fi username", required = False)
+	parser.add_argument("-P", "--wifi-password", dest = "wifi_password", help = "Wi-Fi password", required = False)
+	parser.add_argument("-s", "--radius-server", dest = "radius_server", help = "RADIUS Server", default = "localhost", required = True)
 	parser.add_argument("-e", "--radius-secret", dest = "radius_secret", help = "RADIUS Secret", default = "testing123", required = False)
 	parser.add_argument("-u", "--radius-user", dest = "radius_user", help = "RADIUS User", required = True)
 	parser.add_argument("-p", "--radius-pass", dest = "radius_pass", help = "RADIUS Pass", required = True)
@@ -163,24 +286,23 @@ def _main():
 		server_ca_file = downlod_file(server_ca_url, args.cert_dest)
 		show_cert(server_ca_file)
 
-		#
-		# Generate eapol_test.conf
-		#
-		print("\t[-] Build the 'eapol_test' config in \"{0}\"".format(args.eapol_conf))
-		print("\tFile: {0}".format(args.eapol_conf))
-		print("\tRadius Information")
-		print("\t\tServer: {0}".format(args.radius_server))
-		print("\t\tSecret: {0}".format(args.radius_secret))
-		print("\t\tUser: {0}".format(args.radius_user))
-		print("\t\tPass: {0}".format(args.radius_pass))
-		create_eapol_conf(args, ca_cert_file, server_ca_file)
-
-		#
-		# Validate the connection
-		#
-		if args.eapol_example:
-			print("# Command to validate:")
-			print("eapol_test -c {0} -a {1} -s {2}".format(args.eapol_conf, args.radius_server, args.radius_secret))
+		if args.config_type == "eapol_test":
+			#
+			# Generate eapol_test.conf
+			#
+			print("\t[-] Build the 'eapol_test' config in \"{0}\"".format(args.output_file))
+			print("\tFile: {0}".format(args.output_file))
+			print("\tRadius Information")
+			print("\t\tServer: {0}".format(args.radius_server))
+			print("\t\tSecret: {0}".format(args.radius_secret))
+			print("\t\tUser: {0}".format(args.radius_user))
+			print("\t\tPass: {0}".format(args.radius_pass))
+			create_eapol_conf(args, ca_cert_file, server_ca_file)
+		elif args.config_type == "mobileconfig":
+			print("\t[-] Build the 'mobileconfig' config in \"{0}\"".format(args.output_file))
+			create_mobileconfig(args, ca_cert_file, server_ca_file)
+		else:
+			raise ValueError("Invalid --config-type {0}, It must be 'eapol_test' or 'mobileconfig'".format(args.config_type))
 
 	except Exception as e:
 		print("** ERROR: {0}".format(str(e)))
