@@ -43,6 +43,7 @@ RUN apt-get update && \
         gdb \
         less \
         vim \
+	screen \
 #  Compilers
         clang \
         g++ \

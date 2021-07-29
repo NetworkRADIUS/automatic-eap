@@ -18,7 +18,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # install freeradius package
 #
 RUN apt-get -y update && \
-	apt-get -y install freeradius
+	apt-get -y install freeradius freeradius-mysql freeradius-dhcp
 
 WORKDIR /etc/freeradius
 RUN sed -i -e 's/allow_vulnerable_openssl.*/allow_vulnerable_openssl = yes/' radiusd.conf
