@@ -15,7 +15,7 @@ required is that the client system have:
 1. A web root CA, so that it can securely verify web sites for downloads
 2. a network connection
 3. A user name to authenticate with, e.g. `john.doe@example.com`
-4. A password to authenticate with, e.g. `superSecr4t`
+4. A password to authenticate with, e.g. `superSecr3t`
 
 _That's it_.
 
